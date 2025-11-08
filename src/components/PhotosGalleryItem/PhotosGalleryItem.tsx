@@ -11,7 +11,7 @@ export default function PhotosGalleryItem({
   photo,
   onSelect,
 }: PhotosGalleryItemProps) {
-  const handleSelect = (e) => {
+  const handleSelect = () => {
     onSelect(photo);
   };
 
