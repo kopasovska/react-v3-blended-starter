@@ -4,17 +4,39 @@ import SearchBox from "../SearchBox/SearchBox";
 import Pagination from "../Pagination/Pagination";
 
 import css from "./App.module.css";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { fetchPosts } from "../../services/postService";
+import { useState } from "react";
+import { useDebounce } from "use-debounce";
+import { Toaster } from "react-hot-toast";
 
 export default function App() {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+
+  const { data } = useQuery({
+    queryKey: ["posts", debouncedSearchQuery],
+    queryFn: () => fetchPosts(debouncedSearchQuery),
+    placeholderData: keepPreviousData,
+  });
+
+  const changeSearchQuery = (newQuery: string) => {
+    setSearchQuery(newQuery);
+  };
+
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox />
-        <Pagination />
+        <SearchBox value={searchQuery} onSearch={changeSearchQuery} />
+        {/* <Pagination /> */}
         <button className={css.button}>Create post</button>
       </header>
-      <Modal>{/* Передати через children компонент CreatePostForm або EditPostForm */}</Modal>
-      <PostList />
+      {/* <Modal>Передати через children компонент CreatePostForm або EditPostForm</Modal> */}
+      {data && data.length > 0 && (
+        <PostList posts={data} toggleModal={() => {}} toggleEditPost={() => {}} />
+      )}
+      <Toaster position="top-right" />
     </div>
   );
 }
